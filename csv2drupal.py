@@ -1,3 +1,4 @@
+import argparse
 import csv
 import string
 
@@ -66,14 +67,15 @@ def full_data(f):
         all_bills(reader)
 
 
-def summary_data(f):
-    # title = "Representative"
-    title = "Senator"
+def summary_data(f, chamber):
+    if chamber:
+        title = "Representative"
+    else:
+        title = "Senator"
 
     with open(f) as csv_file:
         reader = csv.DictReader(csv_file)
         for row in reader:
-            # print(str(row) + "\n")
             try:
                 rep_name_tokens = row[title].split(", ")
                 rep_name = rep_name_tokens[1].strip() + " " + rep_name_tokens[0]
@@ -91,8 +93,25 @@ def summary_data(f):
 
 
 if __name__ == "__main__":
-    # in_file = "house_full.csv"
-    # in_file = "senate.csv"
-    in_file = "senate_full.csv"
-    # summary_data(in_file)
-    full_data(in_file)
+    parser = argparse.ArgumentParser(description='Script to turn CSV into Drupal Table')
+    parser.add_argument('-h', '--house', help='Use House Data', action='store_true')
+    parser.add_argument('-s', '--senate', help='Use Senate Data', action='store_true')
+    parser.add_argument('-f', '--full', help='Use Full Data', action='store_true')
+    args = vars(parser.parse_args())
+
+    in_file = None
+    if args["house"]:
+        if args["full"]:
+            in_file = "house_full.csv"
+        else:
+            in_file = "house.csv"
+    elif args["senate"]:
+        if args["full"]:
+            in_file = "senate_full.csv"
+        else:
+            in_file = "senate.csv"
+
+    if args["full"]:
+        full_data(in_file)
+    else:
+        summary_data(in_file, args["house"])
